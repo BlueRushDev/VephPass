@@ -1,0 +1,24 @@
+name = veph
+flags = SF_NOJUMPSPIN|SF_NOJUMPDAMAGE|SF_NOSPINDASHDUST|SF_NONIGHTSSUPER|SF_FASTEDGE
+realname = Veph
+hudname = Veph
+ability = CA_NONE
+ability2 = CA2_NONE
+prefcolor = Clam
+supercolor = Red
+prefoppositecolor = Yellow
+jumpfactor = 1.1
+shieldscale = 1.2
+actionspd = 70
+mindash = 4
+maxdash = 10
+contspeed = 0
+contangle = 1
+
+DSJUMP = DSVPJUMP
+DSSPIN = DSVPSPIN
+DSZOOM = DSVPSPIN
+DSALTDI1 = DSVPDEAD
+DSALTDI2 = DSVPDEAD
+DSALTDI3 = DSVPDEAD
+DSALTDI4 = DSVPDEAD

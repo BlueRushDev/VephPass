@@ -1,0 +1,11 @@
+VephPass
+
+By Rush
+
+- Doubled the amount of time the debuff lasts
+
+- Slightly decreased how long it takes bubble to charge
+
+- Flagholding Charge Thrust Decreased (Divided by 3 Times the Original amount)
+
+- Flagholding Charge Height Thrust Decreased (Divided by 2 Times the Original Amount

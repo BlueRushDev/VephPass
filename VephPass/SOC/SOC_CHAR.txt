@@ -1,0 +1,20 @@
+Character
+SkinName = veph
+DisplayName = Veph
+TagTextColor = SKINCOLOR_AETHER
+TagOutlineColor = SKINCOLOR_CLAM
+OppositeColor = SKINCOLOR_AQUA
+PlayerText = ^EVeph^0 can traverse through levels fast, in land or water!
+
+^EAbility:^0 Dolphin Dive
+Dive downwards at high speeds! Hold jump to bounce right back up.
+
+^EAbility:^0 Slime Tail
+Spin and leave sticky traps for your enemies!
+
+^EAbility:^0 Water Drive
+Press jump during Slime Tail to jet off!
+
+^EAbility:^0 Swim
+Double tap jump/spin underwater, then hold jump to swim!
+#
