@@ -12,8 +12,8 @@ local WATERCOLOR = SKINCOLOR_CERULEAN
 local SLIMETIME = TICRATE*6 //How long the defense debuff lasts (DEFAULT is TICRATE*3)
 local SLIMEIFRAMES = TICRATE*3/4 //The amount of i-frames for being debuffed
 local BUBBLECHARGETIME = TICRATE/4/3 //How long the bubble takes to charge (Default is TICRATE/2)
-local BUBBLECOOLDOWN = TICRATE*4 //Default cooldown period for bubble
-local BUBBLETUMBLE = TICRATE/2 //How long the bubble tumbles you for
+local BUBBLECOOLDOWN = TICRATE*2 //Default cooldown period for bubble
+local BUBBLETUMBLE = TICRATE/4 //How long the bubble tumbles you for
 local BUBBLEINCREASE = 2 //How many debuff stages the bubble gives you
 local BUBBLECOST = 10 //Ring cost for the bubble
 
@@ -894,6 +894,7 @@ addHook("TouchSpecial", function(mobj, mo)
 	if mobj.target == mo or CBW_Battle.MyTeam(mo, mobj.target)
 		if mobj.destscale != mobj.scale or mobj.tracer
 		or P_IsObjectOnGround(mo) or mo.momz*P_MobjFlip(mo) >= 0
+		or not (player.cmd.buttons & BT_SPIN)
 		then return true end
 		
 		mobj.tracer = mo
@@ -1403,71 +1404,14 @@ addHook("AbilitySpecial", function(player)
 		S_StartSound(mo, sfx_s3k44)
 		player.pflags = $ | PF_SHIELDABILITY
 	elseif (player.powers[pw_shield] & SH_NOSTACK) == SH_ELEMENTAL
-	or (player.powers[pw_shield] & SH_NOSTACK) == SH_FLAMEAURA
+	or  (player.powers[pw_shield] & SH_NOSTACK) == SH_FLAMEAURA
 		S_StartSound(mo, sfx_s3k43)
 		player.pflags = $ | PF_SHIELDABILITY
 	end
 	
-	
 	player.vephsquish = -SQUISHTIME
 end)
 
-addHook("MobjThinker", function(player)
-	local mo = player.mo
-	local vephinreal = R_PointToAngle2(0, 0, player.momx, player.momy)
-	if not (mo and mo.valid)
-	or not CBW_Battle
-	or mo.skin ~= "veph"
-	return end
-
-	if (mo.skin == "veph") 
-	and ((player.powers[pw_shield] & SH_NOSTACK) == SH_ELEMENTAL) 
-	and InSlide(player)
-	
-	local ground = mo.floorz
-		local isgravflip = P_MobjFlip(mo) < 0
-			 
-			 if isgravflip
-				ground = mo.ceilingz - FixedMul(mobjinfo[MT_SPINFIRE].height, mo.scale)
-			end
-
-			for i = 0, 1
-				local newx = mo.x + P_ReturnThrustX(mo, (veph + ((i*2)-1)*ANGLE_135), FixedMul(24*FRACUNIT, mo.scale))
-				local newy = mo.y + P_ReturnThrustY(mo, (travelangle + ((i*2)-1)*ANGLE_135), FixedMul(24*FRACUNIT, mo.scale))
-
-			if (mo.standingslope)
-				ground = P_GetZAt(mo.standingslope, newx, newy)
-					if isgravflip
-					ground = $-FixedMul(mobjinfo[MT_SPINFIRE].height, mo.scale)
-				end
-			end
-			
-	local fakeyoshi = P_SpawnMobj(newx, newy, ground, MT_SPINFIRE)
-		fakeyoshi.target = mo
-		fakeyoshi.angle = vephinreal
-		fakeyoshi.destscale = mo.scale
-		fakeyoshi.fuse = $ + 1
-		P_SetScale(fakeyoshi, mo.scale)
-						
-		if isgravflip then
-			fakeyoshi.flags2 = $|MF2_OBJECTFLIP
-		end
-		
-		if not (gametyperules & GTR_FRIENDLY)
-			fakeyoshi.state = S_TEAM_SPINFIRE1
-			fakeyoshi.color = mo.color
-		end
-		
-		if fakeyoshi.fuse == 2
-		P_RemoveMobj(fakeyoshi)
-		end
-	end	
-end, MT_SPINFIRE)		
-		
-	
-	
-	
-	
 addHook("SpinSpecial", function(player)
 	local mo = player.mo
 	if not (mo and mo.valid)
@@ -3415,7 +3359,6 @@ addHook("ThinkFrame", function()
 	ScriptLoaded = true
 	local B = CBW_Battle
 	
-
 	
 	//Priority functions
 	local function GarbagePriority4(player)
@@ -3547,7 +3490,10 @@ addHook("ThinkFrame", function()
 		special = VephBattle,
 		func_priority_ext = GarbagePriority4
 	}
-	
+	print("\x89\VephPass, Patch by Rush & Lumyni")
+
+	print("\x82\It's time to get Wet! Veph Slides in!")
+
 	if SKINVARS_NOSPINSHIELD
 		B.SkinVars["veph"].flags = $|SKINVARS_NOSPINSHIELD
 	end
