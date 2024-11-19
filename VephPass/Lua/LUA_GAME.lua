@@ -3495,7 +3495,7 @@ addHook("ThinkFrame", function()
 		special = VephBattle,
 		func_priority_ext = GarbagePriority4
 	}
-	print("\x89\VephPass, Patch by Rush & Lumyni")
+	print("\x89\VephPass, Patch by Rush & MetaKimi, Special Thanks to Lumyni")
 
 	print("\x82\It's time to get Wet! Veph Slides in!")
 
