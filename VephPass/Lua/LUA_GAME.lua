@@ -743,10 +743,6 @@ end, MT_PLAYER)
 
 //Make the goop fade away when it despawns
 addHook("MobjFuse", function(mobj)
-	local ghost = P_SpawnGhostMobj(mobj)
-	ghost.fuse = $/2
-	ghost.flags2 = $ | MF2_BOSSNOTRAP
-	
 	//Make the ghost match the slope of the goop
 	if mobj.frame & FF_FLOORSPRITE
 	and mobj.floorspriteslope and mobj.floorspriteslope.valid
@@ -770,6 +766,10 @@ addHook("MobjThinker", function(mobj)
 	if mobj.threshold < 5
 		mobj.threshold = $ + 1
 		return
+	end
+	
+	if mobj.tracer.player.playerstate ~= PST_LIVE
+		mobj.tracer.player.vephslimeiframes = 0
 	end
 	
 	local mo = mobj.tracer
@@ -858,6 +858,10 @@ addHook("MobjThinker", function(mobj)
 		else
 			mobj.frame = ($ &~ FF_TRANSMASK) | (trans << FF_TRANSSHIFT)
 		end
+	end
+	
+	if mo.player.vephslimeiframes
+		mo.player.vephslimeiframes = $ - 1
 	end
 end, MT_VEPH_SLIME)
 
@@ -1717,8 +1721,10 @@ addHook("PlayerCanEnterSpinGaps", VephDuck)
 
 //Visual effects and enforcement
 addHook("ThinkFrame", do for player in players.iterate
+	if not (player.mo and player.mo.valid) continue end
+	if player.mo.skin != "veph" continue end
+	
 	local mo = player.mo
-	if not (mo and mo.valid) continue end
 	
 	//Veph's goggles
 	if mo.skin == "veph" and (mo.eflags & MFE_UNDERWATER
@@ -1739,7 +1745,7 @@ addHook("ThinkFrame", do for player in players.iterate
 		end
 	end
 	
-	if mo.skin != "veph" continue end
+
 	player.vephwasinslide = InSlide(player)
 	
 	//Squishy (force it in BattleMod)
@@ -1820,9 +1826,21 @@ end end)
 
 //Main character thinker
 addHook("PlayerThink", function(player)
-	local mo = player.mo
-	if not (mo and mo.valid) then return end
+	if not (player.mo and player.mo.valid) then return end
+	//Decrease slime i-frames
 
+
+	//Veph exclusive stuff
+	if player.mo.skin != "veph"
+		if player.vephelectric
+			mo.spritexoffset = 0
+			mo.spriteyoffset = 0
+			player.vephelectric = 0
+		end
+		return
+	end
+	
+	local mo = player.mo
 	//What
 	if (player.powers[pw_shield] & SH_NOSTACK) == SH_THUNDERCOIN
 	and player.pflags & PF_SHIELDABILITY
@@ -1859,12 +1877,7 @@ addHook("PlayerThink", function(player)
 	elseif mo.vephoffset == nil
 		mo.vephoffset = false
 	end
-	
-	//Decrease slime i-frames
-	if player.vephslimeiframes
-		player.vephslimeiframes = $ - 1
-	end
-	
+		
 	//Super Veph
 	if mo.skin == "veph" and player.solchar and player.solchar.istransformed
 	and mo.state != S_PLAY_SUPER_TRANS1 and mo.state != S_PLAY_SUPER_TRANS2
@@ -1940,16 +1953,6 @@ addHook("PlayerThink", function(player)
 		mo.frame = $ &~ FF_TRANSMASK
 		mo.colorized = false
 		mo.vephwassuper = false
-	end
-	
-	//Veph exclusive stuff
-	if mo.skin != "veph"
-		if player.vephelectric
-			mo.spritexoffset = 0
-			mo.spriteyoffset = 0
-			player.vephelectric = 0
-		end
-		return
 	end
 	
 	local skin = skins[mo.skin]
@@ -2176,33 +2179,35 @@ addHook("PlayerThink", function(player)
 	
 	//Makes it so that you properly bounce off of walls
 	if player.dumbbouncex != nil and player.dumbbouncey != nil
-	and (P_IsObjectOnGround(mo) or player.vephdived
-	or player.vephswipe or player.waterdrive) and player.powers[pw_pushing]
-		if not player.vephswipe or player.vephswipe >= 3
-			player.pflags = $ | PF_SPINNING
-			if not InSlide(player, true)
-				mo.state = S_VEPH_SLIDE_FRWD
-				player.panim = PA_ROLL
-			end
-		end
-		if not player.powers[pw_justlaunched]
-			mo.momx = player.dumbbouncex
-			mo.momy = player.dumbbouncey
-			
+		if (P_IsObjectOnGround(mo) or player.vephdived
+		or player.vephswipe or player.waterdrive) and player.powers[pw_pushing]
 			if not player.vephswipe or player.vephswipe >= 3
-				player.vephsquish = SQUISHTIME*4/3
-				S_StartSound(mo,sfx_vpbonk)
-			else
-				player.vephsquish = -SQUISHTIME
-				S_StartSound(mo,sfx_vphit)
+				player.pflags = $ | PF_SPINNING
+				if not InSlide(player, true)
+					mo.state = S_VEPH_SLIDE_FRWD
+					player.panim = PA_ROLL
+				end
 			end
-			
-			vephcircle(mo, MT_GHOST, 8, 4*mo.scale, player.height/2,
-			mo.scale/2, false, nil, true, player.drawangle)
+			if not player.powers[pw_justlaunched]
+				mo.momx = player.dumbbouncex
+				mo.momy = player.dumbbouncey
+				
+				if not player.vephswipe or player.vephswipe >= 3
+					player.vephsquish = SQUISHTIME*4/3
+					S_StartSound(mo,sfx_vpbonk)
+				else
+					player.vephsquish = -SQUISHTIME
+					S_StartSound(mo,sfx_vphit)
+				end
+				
+				vephcircle(mo, MT_GHOST, 8, 4*mo.scale, player.height/2,
+				mo.scale/2, false, nil, true, player.drawangle)
+			end
 		end
-	end
 	player.dumbbouncex = nil
 	player.dumbbouncey = nil
+	end
+
 	
 	//Disallows the rest of the code in certain circumstances
 	if P_PlayerInPain(player)
